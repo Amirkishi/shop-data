@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فروشگاه - نسخه تصحیح شده</title>
+    <style>
+        /* تمام استایل‌های زیبای قبلی را اینجا قرار دهید */
+        /* من فقط بخش‌های ضروری را می‌نویسم */
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* ... بقیه استایل‌ها ... */
+        
+        .github-section {
+            background: #24292e;
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .input-row input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #444;
+            border-radius: 8px;
+            background: #1a1e22;
+            color: white;
+            font-family: monospace;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #34a853, #2d8c47);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #fbbc04, #e6a000);
+            color: white;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 20px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.5s;
+            min-width: 300px;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, #34a853, #2d8c47);
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #ea4335, #d23f31);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #1a73e8; margin-bottom: 30px;">🛠️ فروشگاه - همگام‌سازی با GitHub</h1>
+        
+        <!-- بخش همگام‌سازی ساده‌تر -->
+        <div class="github-section">
+            <h2 style="color: white; margin-bottom: 20px;">🔗 تنظیمات همگام‌سازی</h2>
+            
+            <div class="input-row">
+                <input type="text" id="repoOwner" placeholder="نام کاربری GitHub (مثال: yourusername)" value="">
+                <input type="text" id="repoName" placeholder="نام ریپازیتوری (مثال: shop-data)" value="shop-data">
+            </div>
+            
+            <div class="input-row">
+                <input type="password" id="githubToken" placeholder="GitHub Personal Access Token" style="flex: 2;">
+                <button onclick="saveGitHubConfig()" class="btn btn-success">💾 ذخیره تنظیمات</button>
+            </div>
+            
+            <div style="margin: 25px 0; padding: 20px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                <h3 style="color: #58a6ff; margin-bottom: 15px;">📖 راهنمای سریع:</h3>
+                <ol style="line-height: 1.8; padding-right: 20px;">
+                    <li>توکن GitHub را از <a href="https://github.com/settings/tokens" target="_blank" style="color: #58a6ff;">اینجا</a> بسازید</li>
+                    <li>دسترسی <strong>✅ repo</strong> را حتماً انتخاب کنید</li>
+                    <li>نام کاربری GitHub خود را وارد کنید</li>
+                    <li>نام ریپازیتوری را وارد کنید (مثلاً shop-data)</li>
+                    <li>روی "ذخیره تنظیمات" کلیک کنید</li>
+                    <li>روی "همگام‌سازی با GitHub" کلیک کنید</li>
+                </ol>
+            </div>
+            
+            <div id="debugInfo" style="display: none; margin: 15px 0; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; font-family: monospace; font-size: 12px;"></div>
+            
+            <div style="display: flex; gap: 15px; margin-top: 25px;">
+                <button onclick="testGitHubConnection()" class="btn btn-warning">🔍 تست اتصال</button>
+                <button onclick="syncToGitHub()" class="btn btn-primary">☁️ همگام‌سازی با GitHub</button>
+                <button onclick="loadFromGitHub()" class="btn btn-success">📥 بارگذاری از GitHub</button>
+            </div>
+            
+            <div id="statusBox" style="margin-top: 20px; padding: 15px; border-radius: 8px; background: rgba(255, 255, 255, 0.1); display: none;">
+                <h4 style="color: white; margin-bottom: 10px;">📊 وضعیت:</h4>
+                <pre id="statusText" style="color: #ddd; font-family: monospace; font-size: 12px; white-space: pre-wrap;"></pre>
+            </div>
+        </div>
+        
+        <!-- داده‌های تست -->
+        <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 15px;">
+            <h3>📝 داده‌های تست</h3>
+            <button onclick="createTestData()" class="btn" style="background: #6c757d; color: white; margin: 10px 0;">
+                ایجاد داده‌های تست
+            </button>
+            <pre id="testData" style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px; font-size: 12px; max-height: 200px; overflow: auto;"></pre>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // ====================
+        // متغیرهای اصلی
+        // ====================
+        let githubConfig = {
+            token: '',
+            repoOwner: '',
+            repoName: 'shop-data',
+            branch: 'main'
+        };
+        
+        let shopData = {
+            products: [
+                { id: 1, name: 'کمد تست', inputs: ['طول', 'عرض'], materials: ['MDF', 'رنگ'] }
+            ],
+            prices: {
+                'کمد تست': { 'MDF': 100000, 'رنگ': 150000 }
+            },
+            lastSync: null
+        };
+        
+        // ====================
+        // بارگذاری تنظیمات
+        // ====================
+        function loadConfig() {
+            try {
+                const saved = localStorage.getItem('githubConfig');
+                if (saved) {
+                    githubConfig = JSON.parse(saved);
+                    document.getElementById('repoOwner').value = githubConfig.repoOwner || '';
+                    document.getElementById('repoName').value = githubConfig.repoName || 'shop-data';
+                    document.getElementById('githubToken').value = githubConfig.token ? '••••••••••••••••' : '';
+                }
+                
+                const savedData = localStorage.getItem('shopData');
+                if (savedData) {
+                    shopData = JSON.parse(savedData);
+                }
+                
+                updateTestDataDisplay();
+            } catch (e) {
+                console.error('خطا در بارگذاری:', e);
+            }
+        }
+        
+        // ====================
+        // ذخیره تنظیمات
+        // ====================
+        function saveGitHubConfig() {
+            const owner = document.getElementById('repoOwner').value.trim();
+            const repo = document.getElementById('repoName').value.trim();
+            const token = document.getElementById('githubToken').value.trim();
+            
+            // اگر توکن قبلاً ذخیره شده و کاربر تغییر نداده
+            const currentToken = githubConfig.token;
+            const newToken = token === '••••••••••••••••' ? currentToken : token;
+            
+            if (!owner || !repo || !newToken) {
+                showNotification('لطفا همه فیلدها را پر کنید', 'error');
+                return;
+            }
+            
+            githubConfig = {
+                token: newToken,
+                repoOwner: owner,
+                repoName: repo,
+                branch: 'main'
+            };
+            
+            localStorage.setItem('githubConfig', JSON.stringify(githubConfig));
+            document.getElementById('githubToken').value = '••••••••••••••••';
+            
+            showNotification('تنظیمات ذخیره شد', 'success');
+            
+            // نمایش اطلاعات دیباگ
+            showDebugInfo();
+        }
+        
+        // ====================
+        // تست اتصال به GitHub
+        // ====================
+        async function testGitHubConnection() {
+            if (!validateConfig()) return;
+            
+            const statusBox = document.getElementById('statusBox');
+            const statusText = document.getElementById('statusText');
+            
+            statusBox.style.display = 'block';
+            statusText.innerHTML = '🔄 در حال تست اتصال به GitHub...\n';
+            
+            try {
+                // تست ۱: بررسی اعتبار توکن
+                statusText.innerHTML += '\n🔐 تست ۱: بررسی توکن...';
+                const userResponse = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `token ${githubConfig.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (!userResponse.ok) {
+                    throw new Error(`توکن نامعتبر است: ${userResponse.status}`);
+                }
+                
+                const userData = await userResponse.json();
+                statusText.innerHTML += ` ✓\n   کاربر: ${userData.login}\n`;
+                
+                // تست ۲: بررسی ریپازیتوری
+                statusText.innerHTML += '\n📁 تست ۲: بررسی ریپازیتوری...';
+                const repoResponse = await fetch(
+                    `https://api.github.com/repos/${githubConfig.repoOwner}/${githubConfig.repoName}`,
+                    {
+                        headers: {
+                            'Authorization': `token ${githubConfig.token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    }
+                );
+                
+                if (repoResponse.ok) {
+                    statusText.innerHTML += ' ✓ (ریپازیتوری وجود دارد)\n';
+                } else if (repoResponse.status === 404) {
+                    statusText.innerHTML += ' ⚠ (ریپازیتوری وجود ندارد - ساخته خواهد شد)\n';
+                } else {
+                    throw new Error(`خطای ریپازیتوری: ${repoResponse.status}`);
+                }
+                
+                // تست ۳: بررسی دسترسی
+                statusText.innerHTML += '\n🔑 تست ۳: بررسی دسترسی‌ها...';
+                const scopes = userResponse.headers.get('x-oauth-scopes') || '';
+                statusText.innerHTML += ` ✓\n   دسترسی‌ها: ${scopes}\n`;
+                
+                if (!scopes.includes('repo')) {
+                    statusText.innerHTML += ' ⚠ هشدار: دسترسی repo ممکن است کافی نباشد\n';
+                }
+                
+                statusText.innerHTML += '\n✅ همه تست‌ها با موفقیت گذرانده شدند!';
+                showNotification('اتصال به GitHub موفق بود', 'success');
+                
+            } catch (error) {
+                statusText.innerHTML += `\n❌ خطا: ${error.message}`;
+                showNotification(`خطا در اتصال: ${error.message}`, 'error');
+                console.error('خطای تست:', error);
+            }
+        }
+        
+        // ====================
+        // همگام‌سازی با GitHub
+        // ====================
+        async function syncToGitHub() {
+            if (!validateConfig()) return;
+            
+            const statusBox = document.getElementById('statusBox');
+            const statusText = document.getElementById('statusText');
+            
+            statusBox.style.display = 'block';
+            statusText.innerHTML = '🔄 شروع همگام‌سازی...\n';
+            
+            try {
+                // 1. بررسی یا ساخت ریپازیتوری
+                statusText.innerHTML += '\n📁 بررسی ریپازیتوری...';
+                let repoExists = true;
+                
+                try {
+                    await fetch(
+                        `https://api.github.com/repos/${githubConfig.repoOwner}/${githubConfig.repoName}`,
+                        {
+                            headers: {
+                                'Authorization': `token ${githubConfig.token}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        }
+                    );
+                } catch {
+                    repoExists = false;
+                }
+                
+                if (!repoExists) {
+                    statusText.innerHTML += '\n   ریپازیتوری وجود ندارد، در حال ساخت...';
+                    
+                    // ساخت ریپازیتوری جدید
+                    const createRepoResponse = await fetch('https://api.github.com/user/repos', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `token ${githubConfig.token}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: githubConfig.repoName,
+                            description: 'ذخیره داده‌های فروشگاه',
+                            private: false,
+                            auto_init: true
+                        })
+                    });
+                    
+                    if (!createRepoResponse.ok) {
+                        throw new Error('نمی‌توان ریپازیتوری ساخت. ممکن است دسترسی کافی نباشد.');
+                    }
+                    
+                    statusText.innerHTML += ' ✓\n';
+                } else {
+                    statusText.innerHTML += ' ✓\n';
+                }
+                
+                // 2. آماده‌سازی داده‌ها
+                shopData.lastSync = new Date().toISOString();
+                localStorage.setItem('shopData', JSON.stringify(shopData));
+                
+                const content = {
+                    products: shopData.products,
+                    prices: shopData.prices,
+                    lastSync: shopData.lastSync,
+                    version: '2.0'
+                };
+                
+                const contentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
+                
+                // 3. بررسی وجود فایل
+                statusText.innerHTML += '\n📄 بررسی فایل موجود...';
+                let sha = null;
+                
+                try {
+                    const fileCheck = await fetch(
+                        `https://api.github.com/repos/${githubConfig.repoOwner}/${githubConfig.repoName}/contents/shop-data.json`,
+                        {
+                            headers: {
+                                'Authorization': `token ${githubConfig.token}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        }
+                    );
+                    
+                    if (fileCheck.ok) {
+                        const fileInfo = await fileCheck.json();
+                        sha = fileInfo.sha;
+                        statusText.innerHTML += ' ✓ (فایل موجود است)\n';
+                    }
+                } catch {
+                    statusText.innerHTML += ' ✓ (فایل جدید)\n';
+                }
+                
+                // 4. آپلود فایل
+                statusText.innerHTML += '\n⬆ در حال آپلود داده‌ها...';
+                
+                const uploadResponse = await fetch(
+                    `https://api.github.com/repos/${githubConfig.repoOwner}/${githubConfig.repoName}/contents/shop-data.json`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${githubConfig.token}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: `همگام‌سازی فروشگاه - ${new Date().toLocaleString('fa-IR')}`,
+                            content: contentBase64,
+                            sha: sha,
+                            branch: githubConfig.branch
+                        })
+                    }
+                );
+                
+                if (!uploadResponse.ok) {
+                    const errorData = await uploadResponse.json();
+                    throw new Error(errorData.message || `خطای ${uploadResponse.status}`);
+                }
+                
+                const result = await uploadResponse.json();
+                
+                statusText.innerHTML += ' ✓\n';
+                statusText.innerHTML += '\n✅ همگام‌سازی با موفقیت انجام شد!\n';
+                statusText.innerHTML += `🔗 فایل: ${result.content.html_url}\n`;
+                statusText.innerHTML += `🕐 تاریخ: ${new Date().toLocaleString('fa-IR')}`;
+                
+                showNotification('داده‌ها با موفقیت در GitHub ذخیره شدند', 'success');
+                updateTestDataDisplay();
+                
+            } catch (error) {
+                statusText.innerHTML += `\n❌ خطا: ${error.message}`;
+                showNotification(`خطا در همگام‌سازی: ${error.message}`, 'error');
+                console.error('خطای همگام‌سازی:', error);
+                
+                // نمایش اطلاعات بیشتر برای دیباگ
+                showDebugInfo();
+            }
+        }
+        
+        // ====================
+        // بارگذاری از GitHub
+        // ====================
+        async function loadFromGitHub() {
+            if (!validateConfig()) return;
+            
+            const statusBox = document.getElementById('statusBox');
+            const statusText = document.getElementById('statusText');
+            
+            statusBox.style.display = 'block';
+            statusText.innerHTML = '📥 در حال بارگذاری از GitHub...\n';
+            
+            try {
+                const response = await fetch(
+                    `https://api.github.com/repos/${githubConfig.repoOwner}/${githubConfig.repoName}/contents/shop-data.json`,
+                    {
+                        headers: {
+                            'Authorization': `token ${githubConfig.token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    }
+                );
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('فایل shop-data.json یافت نشد. ابتدا همگام‌سازی کنید.');
+                    }
+                    throw new Error(`خطای ${response.status}`);
+                }
+                
+                const fileData = await response.json();
+                const decodedContent = decodeURIComponent(escape(atob(fileData.content)));
+                const loadedData = JSON.parse(decodedContent);
+                
+                // اعتبارسنجی داده‌ها
+                if (!loadedData.products || !loadedData.prices) {
+                    throw new Error('فرمت داده‌ها نامعتبر است');
+                }
+                
+                // ذخیره داده‌ها
+                shopData = loadedData;
+                localStorage.setItem('shopData', JSON.stringify(shopData));
+                
+                statusText.innerHTML += '✅ داده‌ها با موفقیت بارگذاری شدند\n';
+                statusText.innerHTML += `🕐 آخرین همگام‌سازی: ${new Date(shopData.lastSync).toLocaleString('fa-IR')}\n`;
+                statusText.innerHTML += `📊 تعداد محصولات: ${shopData.products.length}`;
+                
+                showNotification('داده‌ها از GitHub بارگذاری شدند', 'success');
+                updateTestDataDisplay();
+                
+            } catch (error) {
+                statusText.innerHTML += `\n❌ خطا: ${error.message}`;
+                showNotification(`خطا در بارگذاری: ${error.message}`, 'error');
+            }
+        }
+        
+        // ====================
+        // توابع کمکی
+        // ====================
+        function validateConfig() {
+            if (!githubConfig.token || !githubConfig.repoOwner || !githubConfig.repoName) {
+                showNotification('لطفا ابتدا تنظیمات GitHub را کامل کنید', 'error');
+                return false;
+            }
+            return true;
+        }
+        
+        function showDebugInfo() {
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.style.display = 'block';
+            debugDiv.innerHTML = `
+                <strong>اطلاعات دیباگ:</strong><br>
+                کاربری: ${githubConfig.repoOwner}<br>
+                ریپازیتوری: ${githubConfig.repoName}<br>
+                توکن: ${githubConfig.token ? '✓ موجود' : '✗ ناموجود'}<br>
+                URL API: https://api.github.com/repos/${githubConfig.repoOwner}/${githubConfig.repoName}/contents/shop-data.json
+            `;
+        }
+        
+        function createTestData() {
+            shopData = {
+                products: [
+                    { id: 1, name: 'کمد', inputs: ['طول', 'عرض'], materials: ['MDF', 'ملامینه', 'رنگ'] },
+                    { id: 2, name: 'میز تحریر', inputs: ['طول', 'عرض'], materials: ['MDF', 'رنگ'] },
+                    { id: 3, name: 'دراور', inputs: ['تعداد کشو'], materials: ['MDF', 'ملامینه'] }
+                ],
+                prices: {
+                    'کمد': { 'MDF': 150000, 'ملامینه': 180000, 'رنگ': 220000 },
+                    'میز تحریر': { 'MDF': 130000, 'رنگ': 200000 },
+                    'دراور': { 'MDF': 100000, 'ملامینه': 130000 }
+                },
+                lastSync: new Date().toISOString()
+            };
+            
+            localStorage.setItem('shopData', JSON.stringify(shopData));
+            updateTestDataDisplay();
+            showNotification('داده‌های تست ایجاد شدند', 'success');
+        }
+        
+        function updateTestDataDisplay() {
+            document.getElementById('testData').textContent = 
+                JSON.stringify(shopData, null, 2);
+        }
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+        
+        // ====================
+        // راه‌اندازی
+        // ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConfig();
+            
+            // نمایش اطلاعات اولیه
+            console.log('برنامه آماده است');
+            console.log('برای تست:');
+            console.log('1. روی "تست اتصال" کلیک کنید');
+            console.log('2. اگر توکن درست بود، روی "همگام‌سازی" کلیک کنید');
+            
+            // راهنمای اولیه
+            setTimeout(() => {
+                if (!githubConfig.token) {
+                    showNotification('لطفا ابتدا تنظیمات GitHub را وارد کنید', 'warning');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
